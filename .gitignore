@@ -1,0 +1,99 @@
+# ============================================
+# iSketch Clasico - .gitignore
+# ============================================
+
+# Dependencias
+node_modules/
+
+# Locks
+# package-lock.json
+
+# Archivos de entorno con secretos
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Variables de API
+*.key
+*.pem
+
+# Build outputs
+dist/
+build/
+out/
+
+# Generados por herramientas (no incluir iconos PNG del PWA ni Android mipmaps)
+*.ico
+*.jpg
+*.svg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+\.BIN/
+
+# Windows
+*.exe
+*.dll
+*.bat
+*.cmd
+
+# Git
+.git/
+
+# Docker (sí se suben al repo)
+# Dockerfile
+# docker-compose.yml
+# .dockerignore
+
+# Documentación
+*.md
+
+# Tests
+test/
+__tests__/
+*.test.js
+*.spec.js
+
+# Android build outputs generados (se regeneran con scripts)
+android/app/src/main/res/mipmap-*/**
+android/app/src/main/res/drawable/tv_banner.png
+
+# Logs
+*.log
+npm-debug.log*
+
+# Oracle Cloud
+*.oci
+oci/
+
+# Temporary
+tmp/
+temp/
+
+# Android Build
+android/.gradle/
+android/build/
+android/app/build/
+**/.gradle/
+**/build/
+*.gradle
+**/*.gradle
+
+# Gradle
+gradle/
+gradlew
+gradlew.bat
+
+# Cline
+.clineignore

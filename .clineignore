@@ -1,0 +1,17 @@
+# Evitar que lea librerías pesadas
+node_modules/
+dist/
+build/
+.next/
+
+# Evitar que lea imágenes o multimedia
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.mp4
+
+# Evitar bases de datos locales y logs
+*.sqlite
+*.db
+*.log

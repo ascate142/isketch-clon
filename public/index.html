@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2c4760" />
+  <meta name="description" content="iSketch Clásico - El legendario juego multijugador de dibujo en línea (1999-2010)" />
+  <title>iSketch - the online sketching game</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <style>
+    /* ============================================================
+       ESTILOS RETRO AUTÉNTICOS DE iSKETCH (Macromedia Shockwave UI)
+       ============================================================ */
+    :root {
+      --bg-slate-dark: #1b2f42;
+      --bg-slate: #2c4760;
+      --bg-slate-light: #3e6080;
+      --bg-slate-lighter: #527a9e;
+      --bg-ice: #d8e6f2;
+      --bg-panel: #ebf3fa;
+      --border-dark: #142433;
+      --border-light: #6d96bc;
+      --accent-orange: #ff7700;
+      --accent-yellow: #ffcc00;
+      --accent-green: #28a745;
+      --accent-red: #d32f2f;
+      --text-dark: #102233;
+      --text-light: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Verdana, Tahoma, Arial, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg-slate);
+      background-image: radial-gradient(circle at 50% 30%, #3a5c7d 0%, #1c3246 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* EFECTO DE TEMBLOR / TENSIÓN DE PANTALLA */
+    .screen-shake-anim {
+      animation: screenShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    @keyframes screenShake {
+      10%, 90% { transform: translate3d(-2px, -1px, 0); }
+      20%, 80% { transform: translate3d(3px, 2px, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, -2px, 0); }
+      40%, 60% { transform: translate3d(4px, 2px, 0); }
+    }
+
+    /* BANNER FLOTANTE DE ALERTA Y EMOCIÓN */
+    .splash-alert-banner {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      background: rgba(16, 38, 60, 0.95);
+      border: 3px solid #ffcc00;
+      color: #ffffff;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 20px;
+      font-weight: 900;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.8);
+    }
+    .splash-alert-banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .splash-alert-banner.close-guess {
+      border-color: #ffaa00;
+      background: linear-gradient(135deg, #78350f 0%, #b45309 100%);
+      color: #fef08a;
+    }
+    .splash-alert-banner.guessed {
+      border-color: #4ade80;
+      background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+      color: #ffffff;
+    }
+    .splash-alert-banner.foul {
+      border-color: #f87171;
+      background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+      color: #ffffff;
+    }
+
+    /* BOTONES DE LA CABECERA */
+    .sound-toggle-btn, .btn-header-action {
+      background: #ffffff;
+      border: 2px outset #ffffff;
+      border-radius: 4px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #1a3c5d;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+    }
+    .sound-toggle-btn:active, .btn-header-action:active {
+      border-style: inset;
+      transform: translateY(1px);
+    }
+
+    /* LOGOTIPO CLÁSICO DE iSKETCH */
+    .isketch-logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .isketch-logo {
+      display: flex;
+      align-items: baseline;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      text-shadow: 2px 2px 0px rgba(0,0,0,0.5), 0 0 10px rgba(255,140,0,0.4);
+    }
+    .logo-i {
+      color: #ff8c00;
+      font-size: 38px;
+      font-family: 'Arial Black', Impact, sans-serif;
+      margin-right: 2px;
+      text-shadow: 2px 2px 0 #944000;
+    }
+    .logo-sketch {
+      color: #ffffff;
+      font-family: 'Arial Black', Impact, sans-serif;
+      text-shadow: 2px 2px 0 #1b3854;
+    }
+    .logo-tagline {
+      font-size: 11px;
+      font-style: italic;
+      color: #ffd080;
+      letter-spacing: 0.5px;
+      margin-top: -4px;
+      font-weight: bold;
+    }
+
+    /* ============================================================
+       PANTALLA DE LOBBY
+       ============================================================ */
+    #lobbyScreen {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 12px 16px;
+      gap: 12px;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .lobby-header-bar {
+      background: linear-gradient(180deg, #3f6487 0%, #25425e 100%);
+      border: 2px solid #14283b;
+      border-radius: 8px;
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .lobby-profile-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(14, 30, 46, 0.6);
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #486e92;
+      flex-wrap: wrap;
+    }
+    .lobby-profile-box label {
+      color: #d8e8f8;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .nickname-input-lobby {
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: bold;
+      border: 2px inset #ffffff;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #14304d;
+      outline: none;
+      width: 130px;
+    }
+    .country-select-lobby {
+      padding: 5px 8px;
+      font-size: 13px;
+      font-weight: bold;
+      border: 2px inset #ffffff;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #14304d;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .lobby-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* DIRECTORIO DE SALAS */
+    .rooms-directory-panel {
+      background: #dbe8f4;
+      border: 3px solid #1e3954;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px rgba(0,0,0,0.25);
+    }
+
+    .directory-top-filters {
+      background: #254463;
+      padding: 8px 12px;
+      border-bottom: 2px solid #142a3f;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .lang-tabs-container {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .lang-tab-btn {
+      background: #395c80;
+      border: 1px solid #1c354e;
+      border-bottom: none;
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 5px 5px 0 0;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .lang-tab-btn:hover {
+      background: #4c77a3;
+    }
+    .lang-tab-btn.active {
+      background: #dbe8f4;
+      color: #14304d;
+      border-color: #dbe8f4;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
+    }
+
+    .category-pills-container {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+    .cat-pill-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #e2effa;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cat-pill-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .cat-pill-btn.active {
+      background: var(--accent-yellow);
+      color: #10263c;
+      border-color: #cca300;
+    }
+
+    .rooms-table-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      background: #ffffff;
+      min-height: 360px;
+    }
+    .rooms-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .rooms-table th {
+      background: #315374;
+      color: #ffffff;
+      font-weight: bold;
+      text-align: left;
+      padding: 8px 10px;
+      position: sticky;
+      top: 0;
+      border-bottom: 2px solid #142a3f;
+      z-index: 2;
+    }
+    .rooms-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e0ecf7;
+      color: #18334e;
+    }
+    .rooms-table tr:nth-child(even) {
+      background: #f4f8fc;
+    }
+    .rooms-table tr:hover {
+      background: #d8ebfb;
+      cursor: pointer;
+    }
+    .room-name-cell {
+      font-weight: bold;
+      color: #0b3764;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .difficulty-stars {
+      color: #e6a800;
+      letter-spacing: 2px;
+    }
+    .btn-join-row {
+      background: linear-gradient(180deg, #5ec94a 0%, #3e962c 100%);
+      border: 1px solid #236317;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .btn-join-row:hover {
+      background: linear-gradient(180deg, #71d85d 0%, #47aa33 100%);
+    }
+
+    .directory-footer-bar {
+      background: #c5d8eb;
+      border-top: 2px solid #9bb8d4;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn-retro-action {
+      background: linear-gradient(180deg, #ffffff 0%, #d8e5f2 100%);
+      border: 2px outset #ffffff;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #1b3854;
+      cursor: pointer;
+      box-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+    }
+    .btn-retro-action:active {
+      border-style: inset;
+    }
+    .btn-create-room-accent {
+      background: linear-gradient(180deg, #ff9922 0%, #d86600 100%);
+      border: 2px outset #ffcc66;
+      color: #ffffff;
+    }
+
+    /* PANEL DERECHO DE LOBBY */
+    .lobby-social-panel {
+      background: #dbe8f4;
+      border: 3px solid #1e3954;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px rgba(0,0,0,0.25);
+    }
+    .lobby-social-header {
+      background: #254463;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #142a3f;
+    }
+    .lobby-chat-log {
+      flex: 1;
+      background: #ffffff;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .lobby-msg-item {
+      padding: 4px 6px;
+      border-radius: 4px;
+      background: #f0f6fc;
+      border-left: 3px solid #4a7aa8;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+    .lobby-msg-item strong {
+      color: #1b4570;
+    }
+    .lobby-chat-footer {
+      background: #c5d8eb;
+      border-top: 1px solid #9bb8d4;
+      padding: 8px;
+      display: flex;
+      gap: 6px;
+    }
+    .lobby-chat-input-box {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 2px inset #ffffff;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    /* ============================================================
+       PANTALLA DE JUEGO (GAME SCREEN)
+       ============================================================ */
+    #gameScreen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      padding: 8px;
+      background: #233b52;
+      background-image: linear-gradient(180deg, #2c4966 0%, #192d40 100%);
+      gap: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .game-top-bar {
+      background: linear-gradient(180deg, #375b80 0%, #203b54 100%);
+      border: 2px solid #122436;
+      border-radius: 6px;
+      padding: 6px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+      gap: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      flex-wrap: wrap;
+    }
+    .game-info-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .game-badge-item {
+      background: #142a3e;
+      border: 1px solid #4a749e;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .word-display-banner {
+      background: #091a29;
+      border: 2px solid #5a8ab8;
+      border-radius: 6px;
+      padding: 4px 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      color: #ffee55;
+      text-align: center;
+      min-width: 280px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .word-display-banner.drawer-mode {
+      background: #0d381c;
+      border-color: #38a85c;
+      color: #ffffff;
+      font-family: Verdana, sans-serif;
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+    .word-letter-count-tag {
+      font-family: Verdana, sans-serif;
+      font-size: 12px;
+      font-weight: normal;
+      color: #92c4f0;
+      letter-spacing: 0;
+      margin-left: 8px;
+    }
+
+    .retro-timer-clock {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #112436;
+      border: 2px solid #456f96;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      transition: all 0.2s;
+    }
+    .retro-timer-clock.warning-time {
+      background: #9e5b00;
+      border-color: #ffaa00;
+      animation: timerPulse 0.8s infinite alternate;
+    }
+    .retro-timer-clock.panic-time {
+      background: #a31212;
+      border-color: #ff3333;
+      box-shadow: 0 0 14px #ff3333;
+      animation: timerPanic 0.3s infinite alternate;
+    }
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+    @keyframes timerPanic {
+      from { transform: scale(1); }
+      to { transform: scale(1.12); }
+    }
+
+    .game-workspace-grid {
+      display: grid;
+      grid-template-columns: 210px 1fr 270px;
+      gap: 6px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* SCOREBOARD */
+    .scoreboard-panel {
+      background: #d8e6f2;
+      border: 2px solid #1a3652;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-retro-title {
+      background: #254668;
+      color: #ffffff;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #13273c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .players-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: #f0f6fb;
+    }
+    .player-row-card {
+      background: #ffffff;
+      border: 1px solid #b3cde3;
+      border-radius: 4px;
+      padding: 5px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #173756;
+    }
+    .player-row-card.drawer-active {
+      background: #fff6d9;
+      border: 2px solid #e09f18;
+      color: #8c5b00;
+    }
+    .player-row-card.guessed-active {
+      background: #e2f7e6;
+      border: 2px solid #28a745;
+      color: #116828;
+    }
+    .player-score-tag {
+      background: #254668;
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    .warn-artist-btn-container {
+      padding: 6px;
+      background: #c7dbed;
+      border-top: 1px solid #a3c2de;
+    }
+    .btn-warn-artist {
+      width: 100%;
+      background: linear-gradient(180deg, #ffffff 0%, #ffdada 100%);
+      border: 1px solid #d32f2f;
+      color: #b71c1c;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-warn-artist:hover {
+      background: #ffcdd2;
+    }
+
+    /* TABLERO DE DIBUJO Y TENSIÓN */
+    .canvas-workspace-panel {
+      background: #d8e6f2;
+      border: 2px solid #1a3652;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .drawing-board-frame {
+      flex: 1;
+      position: relative;
+      background: #ffffff;
+      min-height: 0;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      cursor: crosshair;
+      transition: box-shadow 0.3s;
+    }
+    .drawing-board-frame.panic-vignette {
+      box-shadow: inset 0 0 35px rgba(230, 0, 0, 0.65);
+      animation: panicVignettePulse 0.4s infinite alternate;
+    }
+    @keyframes panicVignettePulse {
+      from { box-shadow: inset 0 0 20px rgba(230, 0, 0, 0.4); }
+      to { box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.85); }
+    }
+
+    #paintCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    /* BARRA DE HERRAMIENTAS RETRO */
+    .retro-drawing-toolbar {
+      background: #c7dbed;
+      border-top: 2px solid #1a3652;
+      padding: 6px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .tool-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .tool-icon-btn {
+      background: #ffffff;
+      border: 1px solid #7296b8;
+      border-radius: 3px;
+      padding: 4px 7px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #173856;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .tool-icon-btn:hover {
+      background: #e6f0fa;
+      border-color: #2b567d;
+    }
+    .tool-icon-btn.active {
+      background: #2b567d;
+      border-color: #11283d;
+      color: #ffffff;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .brush-size-item {
+      width: 26px;
+      height: 26px;
+      background: #ffffff;
+      border: 1px solid #7296b8;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .brush-size-item.active {
+      background: #2b567d;
+      border-color: #11283d;
+    }
+    .brush-dot-visual {
+      background: #173856;
+      border-radius: 50%;
+    }
+    .brush-size-item.active .brush-dot-visual {
+      background: #ffffff;
+    }
+
+    .palette-grid-20 {
+      display: grid;
+      grid-template-columns: repeat(10, 18px);
+      grid-template-rows: repeat(2, 18px);
+      gap: 2px;
+      background: #a9c5de;
+      padding: 2px;
+      border: 1px solid #6b90b3;
+      border-radius: 3px;
+    }
+    .color-swatch-item {
+      width: 18px;
+      height: 18px;
+      border-radius: 2px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .color-swatch-item.active {
+      outline: 2px solid #ffffff;
+      box-shadow: 0 0 0 2px #142a3f;
+      z-index: 3;
+    }
+    .btn-shade-adjust {
+      background: #ffffff;
+      border: 1px solid #7296b8;
+      border-radius: 3px;
+      width: 22px;
+      height: 22px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-shade-adjust:hover {
+      background: #e2effa;
+    }
+
+    .btn-artist-hint {
+      background: linear-gradient(180deg, #ffcc00 0%, #e6a800 100%);
+      border: 1px solid #997000;
+      color: #2b1f00;
+      font-weight: 900;
+    }
+    .btn-artist-pass {
+      background: linear-gradient(180deg, #5ec94a 0%, #3e962c 100%);
+      border: 1px solid #236317;
+      color: #ffffff;
+      font-weight: 900;
+    }
+    .stroke-counter-tag {
+      background: #142b42;
+      color: #ffdd44;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    /* CHAT Y ADIVINANZAS */
+    .chat-game-panel {
+      background: #d8e6f2;
+      border: 2px solid #1a3652;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .game-chat-log {
+      flex: 1;
+      background: #ffffff;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 12px;
+    }
+    .game-msg-row {
+      padding: 4px 7px;
+      border-radius: 4px;
+      background: #f2f7fc;
+      border-left: 3px solid #789fc2;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+    .game-msg-row.system {
+      background: #e8f2fc;
+      border-left-color: #22629c;
+      color: #0f3d69;
+      font-weight: bold;
+    }
+    .game-msg-row.guessed {
+      background: #e1f7e7;
+      border-left-color: #28a745;
+      color: #0e6324;
+      font-weight: 900;
+    }
+    .game-msg-row.close {
+      background: #fff8e1;
+      border-left-color: #ff9800;
+      color: #8c5300;
+      font-weight: bold;
+    }
+    .game-msg-row.warning {
+      background: #ffebee;
+      border-left-color: #d32f2f;
+      color: #a31212;
+      font-weight: bold;
+    }
+    .game-msg-row.guessed_chat {
+      background: #eef2ff;
+      border-left-color: #5c6bc0;
+      color: #283593;
+      font-style: italic;
+    }
+    .game-msg-row.spoiler_hidden {
+      background: #f5f5f5;
+      border-left-color: #9e9e9e;
+      color: #757575;
+      font-style: italic;
+    }
+    .chat-input-bar {
+      background: #c5d8eb;
+      border-top: 1px solid #9bb8d4;
+      padding: 6px;
+      display: flex;
+      gap: 4px;
+    }
+    .game-chat-input {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 2px inset #ffffff;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    /* MODALES */
+    .modal-overlay-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 40, 0.75);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay-bg.show {
+      display: flex;
+    }
+    .retro-modal-window {
+      background: #dbe8f4;
+      border: 3px solid #1a3652;
+      border-radius: 8px;
+      width: min(480px, 95%);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.5), inset 0 1px 0 #ffffff;
+      overflow: hidden;
+      animation: modalPop 0.2s ease-out;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-window-header {
+      background: #254668;
+      color: #ffffff;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      border-bottom: 2px solid #142a3f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-window-body {
+      padding: 16px 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .modal-form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      color: #173856;
+      margin-bottom: 4px;
+    }
+    .modal-form-control {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 13px;
+      border: 2px inset #ffffff;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #12283d;
+      outline: none;
+    }
+    .modal-window-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    /* ESTILOS DEL MODAL DE LOGROS */
+    .achievements-progress-box {
+      background: #254668;
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .progress-bar-container {
+      background: #142a3f;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #ffcc00, #4ade80);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .achievements-grid-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .achievement-card-item {
+      background: #ffffff;
+      border: 2px solid #b3cde3;
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    .achievement-card-item.unlocked {
+      background: #f0fdf4;
+      border-color: #22c55e;
+    }
+    .achievement-card-item.locked {
+      background: #f3f4f6;
+      border-color: #cbd5e1;
+      opacity: 0.65;
+    }
+    .achievement-icon-circle {
+      font-size: 26px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .achievement-info-texts {
+      flex: 1;
+      text-align: left;
+    }
+    .achievement-title-text {
+      font-size: 13px;
+      font-weight: bold;
+      color: #173856;
+    }
+    .achievement-desc-text {
+      font-size: 11px;
+      color: #4b637a;
+      line-height: 1.3;
+    }
+    .achievement-status-tag {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+    .achievement-card-item.unlocked .achievement-status-tag {
+      background: #22c55e;
+      color: #ffffff;
+    }
+    .achievement-card-item.locked .achievement-status-tag {
+      background: #94a3b8;
+      color: #ffffff;
+    }
+
+    .podium-celebration-container {
+      text-align: center;
+      padding: 10px 0;
+    }
+    .trophy-winner-icon {
+      font-size: 48px;
+      margin-bottom: 4px;
+    }
+    .podium-winner-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0d4a22;
+      background: #e1f7e7;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #82d897;
+      margin-bottom: 12px;
+    }
+    .ranking-table-podium {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .ranking-table-podium th {
+      background: #315374;
+      color: #ffffff;
+      padding: 6px;
+    }
+    .ranking-table-podium td {
+      padding: 6px;
+      border-bottom: 1px solid #c7dbed;
+      color: #173856;
+      font-weight: bold;
+    }
+
+    /* NAVEGACIÓN Y ENFOQUE PARA ANDROID TV */
+    :focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, .btn-retro-action:focus, .tool-icon-btn:focus, .brush-size-item:focus, .color-swatch-item:focus {
+      outline: 3px solid #ffcc00 !important;
+      box-shadow: 0 0 14px #ffcc00, inset 0 0 4px #ffffff !important;
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    .tv-screen-mode {
+      padding: 2vh 2.5vw;
+    }
+
+    @media (max-width: 960px) {
+      .lobby-content-grid {
+        grid-template-columns: 1fr;
+      }
+      .game-workspace-grid {
+        display: flex;
+        flex-direction: column;
+      }
+      .canvas-workspace-panel {
+        min-height: 380px;
+        order: 1;
+      }
+      .chat-game-panel {
+        max-height: 180px;
+        order: 2;
+      }
+      .scoreboard-panel {
+        max-height: 120px;
+        order: 3;
+      }
+      .retro-drawing-toolbar {
+        padding: 4px;
+        gap: 4px;
+      }
+      .palette-grid-20 {
+        grid-template-columns: repeat(10, 15px);
+        grid-template-rows: repeat(2, 15px);
+      }
+      .color-swatch-item {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BANNER FLOTANTE DE ALERTA Y EMOCIÓN -->
+  <div id="splashAlertBanner" class="splash-alert-banner">¡Alerta!</div>
+
+  <!-- ============================================================
+       PANTALLA DE LOBBY
+       ============================================================ */
+  -->
+  <div id="lobbyScreen">
+    <header class="lobby-header-bar">
+      <div class="isketch-logo-container">
+        <div class="isketch-logo">
+          <span class="logo-i">i</span><span class="logo-sketch">Sketch</span>
+        </div>
+        <div class="logo-tagline">the online sketching game</div>
+      </div>
+
+      <div class="lobby-profile-box">
+        <label for="lobbyCountrySelect">País:</label>
+        <select id="lobbyCountrySelect" class="country-select-lobby" title="Selecciona tu país">
+          <option value="🇲🇽">🇲🇽 México</option>
+          <option value="🇪🇸" selected>🇪🇸 España</option>
+          <option value="🇦🇷">🇦🇷 Argentina</option>
+          <option value="🇨🇴">🇨🇴 Colombia</option>
+          <option value="🇨🇱">🇨🇱 Chile</option>
+          <option value="🇵🇪">🇵🇪 Perú</option>
+          <option value="🇻🇪">🇻🇪 Venezuela</option>
+          <option value="🇪🇨">🇪🇨 Ecuador</option>
+          <option value="🇬🇹">🇬🇹 Guatemala</option>
+          <option value="🇨🇺">🇨🇺 Cuba</option>
+          <option value="🇧🇴">🇧🇴 Bolivia</option>
+          <option value="🇺🇾">🇺🇾 Uruguay</option>
+          <option value="🇵🇾">🇵🇾 Paraguay</option>
+          <option value="🇨🇷">🇨🇷 Costa Rica</option>
+          <option value="🇵🇦">🇵🇦 Panamá</option>
+          <option value="🇺🇸">🇺🇸 EE. UU.</option>
+          <option value="🇧🇷">🇧🇷 Brasil</option>
+          <option value="🇬🇧">🇬🇧 Reino Unido</option>
+          <option value="🇫🇷">🇫🇷 Francia</option>
+          <option value="🇩🇪">🇩🇪 Alemania</option>
+          <option value="🇮🇹">🇮🇹 Italia</option>
+          <option value="🇵🇹">🇵🇹 Portugal</option>
+          <option value="🌐">🌐 Internacional</option>
+        </select>
+
+        <label for="lobbyNicknameInput">Apodo:</label>
+        <input id="lobbyNicknameInput" class="nickname-input-lobby" type="text" maxlength="15" placeholder="Jugador" autocomplete="off" />
+        
+        <button id="btnOpenAchievements" class="btn-header-action" type="button" title="Ver mis logros e insignias">🏆 Logros</button>
+        <button id="btnOpenInstallModal" class="btn-header-action" style="background:#0284c7; color:#fff;" type="button" title="Instalar la aplicación en Móvil, TV o PC">📲 Instalar App</button>
+        <button id="btnSoundToggle" class="sound-toggle-btn" type="button">🔊 Sonido: ON</button>
+      </div>
+    </header>
+
+    <main class="lobby-content-grid">
+      <section class="rooms-directory-panel">
+        <div class="directory-top-filters">
+          <div id="langTabs" class="lang-tabs-container">
+            <button class="lang-tab-btn active" data-lang="all" type="button">🌐 Todas</button>
+            <button class="lang-tab-btn" data-lang="es" type="button">🇪🇸 Español</button>
+            <button class="lang-tab-btn" data-lang="en" type="button">🇬🇧 English</button>
+            <button class="lang-tab-btn" data-lang="fr" type="button">🇫🇷 Français</button>
+            <button class="lang-tab-btn" data-lang="de" type="button">🇩🇪 Deutsch</button>
+            <button class="lang-tab-btn" data-lang="it" type="button">🇮🇹 Italiano</button>
+            <button class="lang-tab-btn" data-lang="pt" type="button">🇵🇹 Português</button>
+          </div>
+
+          <div id="categoryPills" class="category-pills-container">
+            <button class="cat-pill-btn active" data-cat="all" type="button">Todas</button>
+            <button class="cat-pill-btn" data-cat="easy" type="button">Fácil (★)</button>
+            <button class="cat-pill-btn" data-cat="standard" type="button">Estándar (★★★)</button>
+            <button class="cat-pill-btn" data-cat="hard" type="button">Difícil (★★★★★)</button>
+            <button class="cat-pill-btn" data-cat="blitz" type="button">⚡ Blitz</button>
+            <button class="cat-pill-btn" data-cat="5strokes" type="button">✏️ 5 Trazos</button>
+            <button class="cat-pill-btn" data-cat="bigpicture" type="button">🖼️ Big Picture</button>
+            <button class="cat-pill-btn" data-cat="connections" type="button">🔗 Connections</button>
+            <button class="cat-pill-btn" data-cat="tandem" type="button">⚡ Tandem</button>
+            <button class="cat-pill-btn" data-cat="themed" type="button">Temáticas</button>
+          </div>
+        </div>
+
+        <div class="rooms-table-wrapper">
+          <table class="rooms-table">
+            <thead>
+              <tr>
+                <th>Sala</th>
+                <th>Idioma</th>
+                <th>Categoría</th>
+                <th>Dificultad</th>
+                <th>Jugadores</th>
+                <th>Dibujando</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="directory-footer-bar">
+          <button id="btnOpenCreateModal" class="btn-retro-action btn-create-room-accent" type="button">➕ Crear Sala</button>
+          <button id="btnQuickJoinRandom" class="btn-retro-action" type="button">🎲 Sala Aleatoria</button>
+          <span id="lobbyRoomCounterText" style="font-size: 11px; font-weight: bold; color: #173856;">Cargando salas...</span>
+        </div>
+      </section>
+
+      <section class="lobby-social-panel">
+        <div class="lobby-social-header">
+          <span>💬 Chat del Lobby</span>
+          <span id="lobbyOnlineUsersCount">0 en línea</span>
+        </div>
+        <div id="lobbyChatLog" class="lobby-chat-log"></div>
+        <form id="lobbyChatForm" class="lobby-chat-footer">
+          <input id="lobbyChatInput" class="lobby-chat-input-box" type="text" placeholder="Escribe en el lobby..." maxlength="200" autocomplete="off" />
+          <button class="btn-retro-action" type="submit">Enviar</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       PANTALLA DE JUEGO (GAME SCREEN)
+       ============================================================ -->
+  <div id="gameScreen">
+    <header class="game-top-bar">
+      <div class="game-info-badges">
+        <div class="isketch-logo" style="font-size: 20px;">
+          <span class="logo-i" style="font-size: 22px;">i</span><span class="logo-sketch">Sketch</span>
+        </div>
+        <span id="gameRoomBadge" class="game-badge-item">Sala: ...</span>
+        <span id="gameRoundBadge" class="game-badge-item">Ronda 1/10</span>
+      </div>
+
+      <div id="wordDisplayBanner" class="word-display-banner">
+        <span id="wordMaskText">_ _ _ _</span>
+        <span id="wordLetterCountTag" class="word-letter-count-tag"></span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div id="retroTimerClock" class="retro-timer-clock">
+          ⏱️ <span id="timerSecondsText">80</span>s
+        </div>
+        <button id="btnGameSoundToggle" class="sound-toggle-btn" type="button">🔊</button>
+        <button id="btnLeaveToLobby" class="btn-retro-action" type="button">🚪 Salir</button>
+      </div>
+    </header>
+
+    <div class="game-workspace-grid">
+      <aside class="scoreboard-panel">
+        <div class="panel-retro-title">
+          <span>Marcador</span>
+          <span id="gamePlayerCountBadge">0</span>
+        </div>
+        <div id="gamePlayersList" class="players-list-container"></div>
+        <div class="warn-artist-btn-container">
+          <button id="btnWarnArtistModal" class="btn-warn-artist" type="button">⚠️ Advertir Dibujante</button>
+        </div>
+      </aside>
+
+      <main class="canvas-workspace-panel">
+        <div id="drawingBoardFrame" class="drawing-board-frame">
+          <canvas id="paintCanvas"></canvas>
+        </div>
+
+        <div id="drawingToolbar" class="retro-drawing-toolbar">
+          <div class="tool-btn-group">
+            <button id="toolPencil" class="tool-icon-btn active" data-tool="pencil" type="button" title="Lápiz">✏️</button>
+            <button id="toolBrush" class="tool-icon-btn" data-tool="brush" type="button" title="Pincel Suave">🖌️</button>
+            <button id="toolLine" class="tool-icon-btn" data-tool="line" type="button" title="Línea Recta">📏</button>
+            <button id="toolRect" class="tool-icon-btn" data-tool="rect" type="button" title="Rectángulo">⬜</button>
+            <button id="toolRectFill" class="tool-icon-btn" data-tool="rectFill" type="button" title="Rectángulo Relleno">⬛</button>
+            <button id="toolCircle" class="tool-icon-btn" data-tool="circle" type="button" title="Círculo">⭕</button>
+            <button id="toolCircleFill" class="tool-icon-btn" data-tool="circleFill" type="button" title="Círculo Relleno">🔴</button>
+            <button id="toolSpray" class="tool-icon-btn" data-tool="spray" type="button" title="Aerógrafo / Spray">💨</button>
+            <button id="toolBucket" class="tool-icon-btn" data-tool="bucket" type="button" title="Bote de Pintura / Relleno">🪣</button>
+            <button id="toolEraser" class="tool-icon-btn" data-tool="eraser" type="button" title="Goma de Borrar">🧽</button>
+            <button id="toolUndo" class="tool-icon-btn" type="button" title="Deshacer trazo">↩️</button>
+            <button id="toolClear" class="tool-icon-btn" type="button" title="Limpiar Lienzo">🗑️</button>
+          </div>
+
+          <div class="tool-btn-group">
+            <button class="brush-size-item" data-size="1" type="button" title="Fino (1px)">
+              <div class="brush-dot-visual" style="width: 2px; height: 2px;"></div>
+            </button>
+            <button class="brush-size-item active" data-size="3" type="button" title="Medio (3px)">
+              <div class="brush-dot-visual" style="width: 6px; height: 6px;"></div>
+            </button>
+            <button class="brush-size-item" data-size="7" type="button" title="Grueso (7px)">
+              <div class="brush-dot-visual" style="width: 12px; height: 12px;"></div>
+            </button>
+            <button class="brush-size-item" data-size="18" type="button" title="Extra Grueso (18px)">
+              <div class="brush-dot-visual" style="width: 18px; height: 18px;"></div>
+            </button>
+          </div>
+
+          <div class="tool-btn-group">
+            <div id="palette20" class="palette-grid-20"></div>
+            <button id="btnLightenShade" class="btn-shade-adjust" type="button" title="Aclarar Color (▲)">▲</button>
+            <button id="btnDarkenShade" class="btn-shade-adjust" type="button" title="Oscurecer Color (▼)">▼</button>
+            <input id="customColorPicker" type="color" value="#000000" style="width: 20px; height: 20px; padding: 0; cursor: pointer; border: 1px solid #7296b8; border-radius: 3px;" title="Color personalizado" />
+          </div>
+
+          <div class="tool-btn-group">
+            <span id="strokeCountBadge" class="stroke-counter-tag">Trazos: 5/5</span>
+            <button id="btnGiveHint" class="tool-icon-btn btn-artist-hint" type="button" title="Revelar letra (-2 pts)">💡 Pista</button>
+            <button id="btnSkipOrDone" class="tool-icon-btn btn-artist-pass" type="button" title="Pasar turno o marcar como terminado">⏭️ SKIP</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="chat-game-panel">
+        <div class="panel-retro-title">
+          <span>Chat y Adivinanzas</span>
+        </div>
+        <div id="gameChatLog" class="game-chat-log"></div>
+        <form id="gameChatForm" class="chat-input-bar">
+          <input id="gameChatInput" class="game-chat-input" type="text" placeholder="Escribe tu respuesta..." maxlength="45" autocomplete="off" />
+        </form>
+      </aside>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR SALA -->
+  <div id="createRoomModal" class="modal-overlay-bg">
+    <div class="retro-modal-window">
+      <div class="modal-window-header">
+        <span>➕ Crear Sala Personalizada</span>
+        <button id="btnCloseCreateModal" type="button" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-window-body">
+        <form id="createRoomForm">
+          <div class="modal-form-group">
+            <label for="createInputName">Nombre de la Sala:</label>
+            <input id="createInputName" class="modal-form-control" type="text" placeholder="Mi Sala iSketch" maxlength="25" required />
+          </div>
+          <div class="modal-form-group">
+            <label for="createSelectLang">Idioma de las palabras:</label>
+            <select id="createSelectLang" class="modal-form-control">
+              <option value="es">🇪🇸 Español</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="pt">🇵🇹 Português</option>
+            </select>
+          </div>
+          <div class="modal-form-group">
+            <label for="createSelectMode">Modalidad de Juego:</label>
+            <select id="createSelectMode" class="modal-form-control">
+              <option value="classic">Clásico (Puntuación y turnos estándar)</option>
+              <option value="blitz">⚡ Blitz (Rápido, gana el primer acierto)</option>
+              <option value="5strokes">✏️ 5 Trazos Solamente</option>
+              <option value="bigpicture">🖼️ Big Picture (Conceptos amplios)</option>
+              <option value="connections">🔗 Connections (Palabras compuestas)</option>
+              <option value="tandem">⚡ Tandem (Palabras cortas)</option>
+            </select>
+          </div>
+          <div class="modal-form-group">
+            <label for="createSelectRounds">Número de Rondas:</label>
+            <select id="createSelectRounds" class="modal-form-control">
+              <option value="5">5 Rondas (Rápida)</option>
+              <option value="10" selected>10 Rondas (Estándar Oficial)</option>
+              <option value="15">15 Rondas (Larga)</option>
+            </select>
+          </div>
+          <div class="modal-window-actions">
+            <button id="btnCancelCreate" class="btn-retro-action" type="button">Cancelar</button>
+            <button class="btn-retro-action btn-create-room-accent" type="submit">Crear y Entrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOGROS E INSIGNIAS -->
+  <div id="achievementsModal" class="modal-overlay-bg">
+    <div class="retro-modal-window" style="width: min(520px, 95%);">
+      <div class="modal-window-header" style="background: #1e3a5f;">
+        <span>🏆 Mis Logros e Insignias de iSketch</span>
+        <button id="btnCloseAchievementsModal" type="button" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-window-body">
+        <div class="achievements-progress-box">
+          <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span id="achievementsCountText">0 / 8 Logros Desbloqueados</span>
+            <span id="achievementsPercentText">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div id="achievementsProgressBarFill" class="progress-bar-fill"></div>
+          </div>
+          <div id="playerStatsSummaryText" style="margin-top:8px; font-size:11px; color:#cbd5e1;">
+            Partidas: 0 | Victorias: 0 | Puntos: 0
+          </div>
+        </div>
+        <div id="achievementsGridList" class="achievements-grid-list"></div>
+        <div class="modal-window-actions" style="justify-content: center; margin-top: 14px;">
+          <button id="btnOkAchievements" class="btn-retro-action" type="button">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADVERTIR DIBUJANTE -->
+  <div id="warnArtistModal" class="modal-overlay-bg">
+    <div class="retro-modal-window">
+      <div class="modal-window-header" style="background: #991b1b;">
+        <span>⚠️ Advertir al Dibujante (Juego Limpio)</span>
+        <button id="btnCloseWarnModal" type="button" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-window-body">
+        <p style="font-size: 12px; color: #173856; margin-bottom: 12px;">
+          Reglas de iSketch: Está <strong>estrictamente prohibido escribir letras o números</strong> o negarse a dibujar. Selecciona el motivo de la advertencia:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="btn-retro-action warn-reason-btn" data-reason="¡No escribas letras ni números en el dibujo!" type="button">✍️ Escribiendo letras o números</button>
+          <button class="btn-retro-action warn-reason-btn" data-reason="¡El dibujante está inactivo (+20 segundos)!" type="button">⏳ Dibujante inactivo</button>
+          <button class="btn-retro-action warn-reason-btn" data-reason="¡Dibujo inapropiado u ofensivo!" type="button">🚫 Contenido inapropiado</button>
+          <button class="btn-retro-action warn-reason-btn" data-reason="¡Haciendo trampas / palabra revelada!" type="button">🚨 Trampas en la partida</button>
+        </div>
+        <div class="modal-window-actions">
+          <button id="btnCancelWarn" class="btn-retro-action" type="button">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INSTALAR APP (PWA, APTOIDE, HUAWEI, APK) -->
+  <div id="installAppModal" class="modal-overlay-bg">
+    <div class="retro-modal-window" style="width: min(490px, 95%);">
+      <div class="modal-window-header" style="background: #0284c7;">
+        <span>📲 Instalar iSketch Clásico (Móvil, TV y PC)</span>
+        <button id="btnCloseInstallModal" type="button" style="background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-window-body">
+        <p style="font-size: 12px; color: #173856; margin-bottom: 14px;">
+          Disfruta de iSketch a pantalla completa, sin barras del navegador y con el mejor rendimiento en cualquier dispositivo:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Opción 1: PWA -->
+          <div style="background:#ffffff; border:2px solid #bae6fd; border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:bold; color:#0369a1; font-size:13px;">🌐 Instalar como Web App (PWA)</div>
+              <div style="font-size:11px; color:#64748b;">Directo desde tu navegador en Móvil, PC o TV. Sin tiendas.</div>
+            </div>
+            <button id="btnPwaTriggerInstall" class="btn-retro-action" style="background:#0284c7; color:#fff;" type="button">Instalar</button>
+          </div>
+
+          <!-- Opción 2: Aptoide -->
+          <div style="background:#ffffff; border:2px solid #fed7aa; border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:bold; color:#c2410c; font-size:13px;">🛍️ Aptoide Store</div>
+              <div style="font-size:11px; color:#64748b;">Para todos los celulares Android y Smart TVs.</div>
+            </div>
+            <a href="https://aptoide.com" target="_blank" rel="noopener noreferrer" class="btn-retro-action" style="background:#f97316; color:#fff; text-decoration:none; padding:4px 10px;">Abrir</a>
+          </div>
+
+          <!-- Opción 3: Huawei AppGallery -->
+          <div style="background:#ffffff; border:2px solid #fecdd3; border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:bold; color:#be123c; font-size:13px;">🌺 Huawei AppGallery</div>
+              <div style="font-size:11px; color:#64748b;">Para teléfonos y tablets Huawei.</div>
+            </div>
+            <a href="https://appgallery.huawei.com" target="_blank" rel="noopener noreferrer" class="btn-retro-action" style="background:#e11d48; color:#fff; text-decoration:none; padding:4px 10px;">Abrir</a>
+          </div>
+
+          <!-- Opción 4: APK Directo -->
+          <div style="background:#ffffff; border:2px solid #bbf7d0; border-radius:6px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:bold; color:#15803d; font-size:13px;">📥 Descargar APK Directo</div>
+              <div style="font-size:11px; color:#64748b;">Instalador oficial .apk para Android y Android TV.</div>
+            </div>
+            <a href="/iSketch.apk" download class="btn-retro-action" style="background:#16a34a; color:#fff; text-decoration:none; padding:4px 10px;">Descargar</a>
+          </div>
+        </div>
+
+        <div class="modal-window-actions" style="margin-top: 14px; justify-content: center;">
+          <button id="btnCancelInstallModal" class="btn-retro-action" type="button">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PODIO DE FIN DE PARTIDA -->
+  <div id="gameOverModal" class="modal-overlay-bg">
+    <div class="retro-modal-window" style="width: 440px;">
+      <div class="modal-window-header" style="background: #2b7a42;">
+        <span>🏆 ¡Fin de la Partida iSketch!</span>
+      </div>
+      <div class="modal-window-body podium-celebration-container">
+        <div class="trophy-winner-icon">🥇</div>
+        <div id="gameOverWinnerBox" class="podium-winner-title">Ganador: ...</div>
+        <table class="ranking-table-podium">
+          <thead>
+            <tr>
+              <th>Puesto</th>
+              <th>Jugador</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="gameOverTableBody"></tbody>
+        </table>
+        <div class="modal-window-actions" style="justify-content: center;">
+          <button id="btnGameOverBackToLobby" class="btn-retro-action btn-create-room-accent" type="button">Volver al Lobby</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/game.js"></script>
+  <script src="/voice.js"></script>
+  <script src="/tv-nav.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW:', err));
+    }
+  </script>
+</body>
+</html>

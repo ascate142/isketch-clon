@@ -1,0 +1,21 @@
+# ============================================
+# iSketch Clásico - docker-compose.yml
+# ============================================
+# Uso: docker-compose up -d
+# Acceso: http://localhost:3000
+# ============================================
+
+services:
+  isketch-server:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - isketch-net
+
+networks:
+  isketch-net:
+    driver: bridge

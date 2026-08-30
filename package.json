@@ -1,0 +1,33 @@
+{
+  "name": "isketch-clon",
+  "version": "1.0.0",
+  "description": "iSketch Clásico 100% Fiel - Macromedia Shockwave (1999-2010)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node run-tests.js"
+  },
+  "keywords": [
+    "isketch",
+    "shockwave",
+    "multiplayer",
+    "drawing-game",
+    "canvas",
+    "socket.io"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "canvas": "^3.2.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.17.1",
+    "node-fetch": "^3.3.2",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0"
+  }
+}

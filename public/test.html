@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test iSketch Direct</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; }
+    button { padding: 10px 20px; margin: 10px 0; font-size: 16px; cursor: pointer; }
+    #log { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; height: 300px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Test iSketch Direct</h1>
+    <input id="nameInput" type="text" placeholder="Tu nombre" value="DirectTest" />
+    <button onclick="testJoinRoom()">Enviar Join Room</button>
+    <button onclick="testChat()">Enviar Chat Message</button>
+    <button onclick="clearLog()">Limpiar Log</button>
+    
+    <h2>Log de eventos:</h2>
+    <div id="log"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const log = document.getElementById('log');
+    window.socket = io();
+
+    function logEvent(msg) {
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `[${time}] ${msg}\n`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function clearLog() {
+      log.innerHTML = '';
+    }
+
+    socket.on('connect', () => {
+      logEvent('✅ Conectado al servidor: ' + socket.id);
+    });
+
+    socket.on('disconnect', () => {
+      logEvent('❌ Desconectado del servidor');
+    });
+
+    socket.on('update_players', (players) => {
+      logEvent(`👥 Jugadores: ${players.map(p => p.nickname).join(', ')}`);
+    });
+
+    socket.on('game_started', (data) => {
+      logEvent(`🎮 ¡Juego iniciado! Ronda ${data.round}/${data.maxRounds}`);
+    });
+
+    socket.on('role_assigned', (data) => {
+      logEvent(`🎯 Rol: ${data.isDrawer ? 'Dibujante (palabra: ' + data.word + ')' : 'Adivinador'}`);
+    });
+
+    socket.on('chat_message', (data) => {
+      logEvent(`💬 ${data.nickname}: ${data.message}`);
+    });
+
+    function testJoinRoom() {
+      const nickname = document.getElementById('nameInput').value || 'DirectTest';
+      logEvent(`📤 Enviando join_room: ${nickname} -> classic`);
+      socket.emit('join_room', { room: 'classic', nickname });
+    }
+
+    function testChat() {
+      const msg = 'Mensaje de prueba ' + Date.now();
+      logEvent(`📤 Enviando chat_message: ${msg}`);
+      socket.emit('chat_message', { message: msg });
+    }
+
+    logEvent('✨ Página cargada, esperando eventos...');
+  </script>
+</body>
+</html>

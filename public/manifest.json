@@ -1,0 +1,49 @@
+{
+  "name": "iSketch Clásico - Dibujo Multijugador",
+  "short_name": "iSketch",
+  "description": "El legendario juego multijugador de dibujo y adivinanza en tiempo real (1999-2010). Dibuja, adivina y compite con amigos en salas de todo el mundo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1b2f42",
+  "theme_color": "#2c4760",
+  "orientation": "any",
+  "categories": ["games", "entertainment", "social"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/tv-banner.svg",
+      "sizes": "320x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "⚡ Blitz Rápido",
+      "url": "/?mode=blitz",
+      "description": "Partidas ultra rápidas de iSketch"
+    },
+    {
+      "name": "✏️ 5 Trazos",
+      "url": "/?mode=5strokes",
+      "description": "Dibuja con solo 5 trazos"
+    }
+  ]
+}
