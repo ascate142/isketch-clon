@@ -3,6 +3,13 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 
+// CORS: Permitir origen específico en producción o todos en desarrollo
+const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+const corsConfig = allowedOrigin === '*' 
+  ? { origin: '*' }
+  : { origin: allowedOrigin, credentials: true };
+console.log('🔒 CORS:', allowedOrigin === '*' ? 'Todos (dev)' : allowedOrigin);
+
 // --- Integración opcional de Gemini ---
 let genAI = null;
 try {
@@ -18,7 +25,7 @@ try {
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { cors: corsConfig });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
