@@ -57,6 +57,11 @@ desktop.ini
 # .dockerignore
 
 # Documentación
+
+# Documentación (excepciones para README y guías)
+*.md
+!README.md
+!GUIA_*.md
 *.md
 
 # Tests
