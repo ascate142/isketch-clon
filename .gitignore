@@ -81,7 +81,7 @@ oci/
 tmp/
 temp/
 
-# Android Build
+# Android/Gradle
 android/.gradle/
 android/build/
 android/app/build/
@@ -89,9 +89,9 @@ android/app/build/
 **/build/
 *.gradle
 **/*.gradle
-
-# Gradle
 gradle/
 gradlew
 gradlew.bat
 
+# Cline
+.clineignore
