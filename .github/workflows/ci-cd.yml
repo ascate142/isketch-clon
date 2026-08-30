@@ -42,5 +42,39 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+  # Despliegue a Oracle Cloud (requiere configurar SSH keys en GitHub Secrets)
+  deploy-oracle:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: build/
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.ORACLE_SSH_KEY }}
+      
+      - name: Deploy to Oracle Cloud
+        env:
+          ORACLE_HOST: ${{ secrets.ORACLE_HOST }}
+          ORACLE_USER: ${{ secrets.ORACLE_USER }}
+        run: |
+          echo "Desplegando a Oracle Cloud..."
+          scp -o StrictHostKeyChecking=no -r build/* $ORACLE_USER@$ORACLE_HOST:/home/$ORACLE_USER/isketch/
+          ssh $ORACLE_USER@$ORACLE_HOST << 'ENDSSH'
+            cd /home/$ORACLE_USER/isketch
+            docker-compose down 2>/dev/null || true
+            docker-compose up -d --build
+            docker logs -f isketch-isketch-server-1 --tail=10
+          ENDSSH
+          echo "✅ Despliegue completado!"
     steps:
       - run: echo 'Deploy to Oracle Cloud'
