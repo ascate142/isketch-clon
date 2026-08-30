@@ -94,6 +94,84 @@ isketch-clon/
 
 ---
 
+## 🚀 Despliegue en Producción
+
+### Arquitectura
+
+```
+┌─────────────────────┐     WebSocket      ┌─────────────────────┐
+│   GitHub Pages      │◄──────────────────►│   Oracle Cloud      │
+│   (Frontend)        │    ws://IP:3000    │   (Node.js Server)  │
+└─────────────────────┘                    └─────────────────────┘
+```
+
+### Paso 1: GitHub Pages
+
+1. Ve a **Settings → Pages** en tu repositorio
+2. Selecciona **GitHub Actions** como Source
+3. El workflow `.github/workflows/pages.yml` desplegará automáticamente
+
+### Paso 2: Oracle Cloud
+
+#### Crear Instancia
+```
+1. cloud.oracle.com → Compute → Instances → "Create Instance"
+2. Name: isketch-server
+3. Shape: VM.Standard.A1.Flex (4 cores, 24GB RAM - Always Free)
+4. Image: Ubuntu 22.04
+5. VCN: Nueva "isketch-vcn"
+6. SSH Keys: Guardar clave privada
+7. Anotar IP pública
+```
+
+#### Abrir Puertos (Security List)
+```
+Networking → isketch-vcn → Security Lists → Default Security List
+- SSH (22): Solo TU_IP/32
+- HTTP (80): 0.0.0.0/0
+- iSketch (3000): 0.0.0.0/0
+```
+
+#### Desplegar
+```bash
+ssh -i clave.pem ubuntu@TU_IP
+
+# Instalar Docker
+sudo apt update && sudo apt install -y docker.io docker-compose
+sudo systemctl start docker
+sudo usermod -aG docker ubuntu
+exit
+
+# Reconectar y clonar
+ssh -i clave.pem ubuntu@TU_IP
+mkdir -p ~/isketch && cd ~/isketch
+git clone https://github.com/TU_USUARIO/isketch-clon.git .
+
+# Crear .env
+echo 'NODE_ENV=production
+PORT=3000
+ALLOWED_ORIGIN=https://tu-usuario.github.io' > .env
+
+# Iniciar
+docker compose up -d --build
+
+# Verificar
+docker ps
+curl http://localhost:3000
+```
+
+### Paso 3: GitHub Actions (opcional)
+
+**Settings → Secrets and variables → Actions:**
+- `ORACLE_HOST`: Tu IP pública
+- `ORACLE_USER`: `ubuntu`
+- `ORACLE_SSH_KEY`: Tu clave SSH privada
+
+### Guía Completa
+
+Ver `GUIA_ORACLE_CLOUD.md`
+---
+
 ## 🚀 Despliegue
 
 ### GitHub Pages (Frontend)
