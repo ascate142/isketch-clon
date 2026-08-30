@@ -1,7 +1,39 @@
 // ============================================================
 //  iSKETCH CLÁSICO - CLIENTE OFICIAL (Estilo Shockwave 1999-2010)
 // ============================================================
-const socket = io();
+// Configuración del servidor Socket.IO
+// Por defecto se conecta al mismo host (útil para Fly.io).
+// Para GitHub Pages o deployments estáticos, define window.ISKETCH_SERVER
+// o crea un archivo config.js antes de cargar este script.
+//
+//   <script>window.ISKETCH_SERVER = 'https://isketch-clon.fly.dev';</script>
+//   <script src="/game.js"></script>
+(function () {
+  let serverUrl;
+  if (typeof window.ISKETCH_SERVER === 'string' && window.ISKETCH_SERVER) {
+    // Override explícito (ej. desde GitHub Pages)
+    serverUrl = window.ISKETCH_SERVER;
+  } else {
+    // Por defecto: mismo origen (Fly.io sirve frontend + backend juntos)
+    const origin = window.location.origin;
+    // Detección: si el origen es github.io, usar Fly.io por defecto
+    if (origin.includes('github.io')) {
+      serverUrl = 'https://isketch-clon.fly.dev';
+    } else {
+      serverUrl = origin;
+    }
+  }
+  window.ISKETCH_SERVER_URL = serverUrl;
+  console.log('🎨 iSketch conectando a:', serverUrl);
+  // Hacer io() apuntar al servidor correcto
+  window.socket = io(serverUrl, {
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000
+  });
+})();
+const socket = window.socket;
 
 // 20 Colores Oficiales de iSketch Shockwave
 const ISKETCH_20_COLORS = [

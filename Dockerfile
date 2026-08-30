@@ -1,32 +1,38 @@
 # ============================================
-# iSketch Clásico - Dockerfile
-# ======================================
-# Uso: docker build -t isketch-server .
-#      docker run -p 3000:3000 -e PORT=3000 isketch-server
+# iSketch Clásico - Dockerfile para Fly.io
+# ============================================
+# Uso: fly deploy
 # ============================================
 
 FROM node:20-alpine
 
+# Instalar curl para healthcheck
+RUN apk add --no-cache curl
+
 # Working directory
 WORKDIR /app
 
-# Copy package files first (better Docker layer caching)
-COPY package.json package-lock.json* ./
+# Copiar package files primero (mejor caché de capas Docker)
+COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Instalar dependencias de producción
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Copy application source
+# Copiar código fuente
 COPY server.js ./
 COPY public/ ./public/
 COPY .env.example ./
 
-# Expose the port the app runs on
-EXPOSE 3000
+# Usuario no-root para seguridad
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
 
-# Health check
+# Exponer el puerto (Fly.io usa PORT=8080)
+EXPOSE 8080
+
+# Health check de Fly.io
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:$PORT/api/geoip', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
+  CMD curl -f http://localhost:8080/api/geoip || exit 1
 
-# Start the server
+# Iniciar el servidor
 CMD ["node", "server.js"]
